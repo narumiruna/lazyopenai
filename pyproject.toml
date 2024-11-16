@@ -1,16 +1,14 @@
 [project]
-name = "lazyai"
+name = "lazyopenai"
 version = "0.0.1"
 description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 requires-python = ">=3.8"
-dependencies = [
-    "openai>=1.54.4",
-]
+dependencies = ["openai>=1.54.4"]
 
 [project.scripts]
-lazyai = "lazyai.cli:main"
+lazyopenai = "lazyopenai.cli:main"
 
 [build-system]
 requires = ["hatchling"]
