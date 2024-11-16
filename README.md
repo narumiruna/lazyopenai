@@ -1,1 +1,1 @@
-# LazyAI
+# Lazy OpenAI
