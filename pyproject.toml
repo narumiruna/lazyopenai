@@ -1,14 +1,14 @@
 [project]
-name = "python-template"
-version = "0.1.0"
-description = "Add your description here"
+name = "lazyai"
+version = "0.0.1"
+description = ""
 readme = "README.md"
 authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
-requires-python = ">=3.12"
+requires-python = ">=3.8"
 dependencies = []
 
 [project.scripts]
-python-template = "python_template.cli:main"
+lazyai = "lazyai.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -18,8 +18,8 @@ build-backend = "hatchling.build"
 dev = [
     "mypy>=1.13.0",
     "pytest>=8.3.3",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.7.3",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.7.4",
 ]
 
 [tool.ruff]
