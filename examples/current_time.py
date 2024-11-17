@@ -1,16 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel
-
 from lazyopenai import generate
+from lazyopenai.types import LazyTool
 
 
-class GetCurrentTime(BaseModel):
+class GetCurrentTime(LazyTool):
     def __call__(self) -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-class CurrentTime(BaseModel):
+class CurrentTime(LazyTool):
     current_time: str
 
 

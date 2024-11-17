@@ -8,14 +8,15 @@ from openai.types.chat.chat_completion import ChatCompletion
 from pydantic import BaseModel
 
 from .settings import settings
+from .types import LazyTool
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class LazyClient:
-    def __init__(self, tools: list[type[BaseModel]] | None = None) -> None:
+    def __init__(self, tools: list[type[LazyTool]] | None = None) -> None:
         self.client = OpenAI(api_key=settings.api_key)
-        self.messages = []  # type: ignore
+        self.messages: list = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else None
 
     def _create(self, messages) -> ChatCompletion:
@@ -50,14 +51,6 @@ class LazyClient:
                 response_format=response_format,
             )
 
-    def _get_tool(self, name: str):
-        if not self.tools:
-            return None
-
-        for tool in self.tools:
-            if tool.__name__ == name:
-                return tool
-
     def _handle_tool_calls(self, response: ChatCompletion, response_format: type[T] | None = None):
         if not self.tools:
             return response
@@ -83,7 +76,7 @@ class LazyClient:
             self.messages += [
                 {
                     "role": "tool",
-                    "content": str(tool(**tool_args)()),  # type: ignore
+                    "content": str(tool(**tool_args)()),
                     "tool_call_id": tool_call.id,
                 }
             ]

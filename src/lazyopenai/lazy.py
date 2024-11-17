@@ -3,6 +3,7 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from .client import LazyClient
+from .types import LazyTool
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -11,7 +12,7 @@ def generate(
     user: str,
     system: str | None = None,
     response_format: type[T] | None = None,
-    tools: list[type[BaseModel]] | None = None,
+    tools: list[type[LazyTool]] | None = None,
 ) -> T | str:
     client = LazyClient(tools=tools)
     if system:
