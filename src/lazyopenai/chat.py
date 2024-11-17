@@ -20,8 +20,8 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
     tool_dict = {tool.__name__: tool for tool in tools}
 
     response = client.chat.completions.create(
-        model=settings.model,
         messages=messages,
+        model=settings.model,
         temperature=settings.temperature,
         tools=[openai.pydantic_function_tool(tool) for tool in tools],
     )
@@ -46,6 +46,7 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
             response = client.chat.completions.create(
                 messages=messages + [choice.message] + tool_messages,
                 model=settings.model,
+                temperature=settings.temperature,
             )
 
     if not response.choices:
@@ -61,16 +62,16 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
 async def async_create(messages) -> str:
     client = get_async_client()
 
-    completion = await client.chat.completions.create(
-        model=settings.model,
+    response = await client.chat.completions.create(
         messages=messages,
+        model=settings.model,
         temperature=settings.temperature,
     )
 
-    if not completion.choices:
+    if not response.choices:
         raise ValueError("No completion choices returned")
 
-    content = completion.choices[0].message.content
+    content = response.choices[0].message.content
     if not content:
         raise ValueError("No completion message content")
 
@@ -85,8 +86,8 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
     tool_dict = {tool.__name__: tool for tool in tools}
 
     response = client.beta.chat.completions.parse(
-        model=settings.model,
         messages=messages,
+        model=settings.model,
         temperature=settings.temperature,
         response_format=response_format,
         tools=[openai.pydantic_function_tool(tool) for tool in tools],
@@ -110,8 +111,8 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
                     }
                 )
             response = client.beta.chat.completions.parse(
-                model=settings.model,
                 messages=messages + [choice.message] + tool_messages,
+                model=settings.model,
                 temperature=settings.temperature,
                 response_format=response_format,
             )
@@ -129,17 +130,17 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
 async def async_parse(messages, response_format: type[T]) -> T:
     client = get_async_client()
 
-    completion = await client.beta.chat.completions.parse(
-        model=settings.model,
+    response = await client.beta.chat.completions.parse(
         messages=messages,
+        model=settings.model,
         temperature=settings.temperature,
         response_format=response_format,
     )
 
-    if not completion.choices:
+    if not response.choices:
         raise ValueError("No completion choices returned")
 
-    parsed = completion.choices[0].message.parsed
+    parsed = response.choices[0].message.parsed
     if not parsed:
         raise ValueError("No completion message parsed")
 
