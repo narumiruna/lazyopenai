@@ -13,17 +13,18 @@ S = TypeVar("S", bound=BaseModel)
 
 
 def create(messages, tools: list[type[S]] | None = None) -> str:
-    tools = tools or []
-
     client = get_client()
 
-    tool_dict = {tool.__name__: tool for tool in tools}
-
+    kwargs = {}
+    tool_dict = {}
+    if tools:
+        tool_dict = {tool.__name__: tool for tool in tools}
+        kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
     response = client.chat.completions.create(
         messages=messages,
         model=settings.model,
         temperature=settings.temperature,
-        tools=[openai.pydantic_function_tool(tool) for tool in tools],
+        **kwargs,  # type: ignore
     )
 
     # handle tool calls
@@ -79,18 +80,26 @@ async def async_create(messages) -> str:
 
 
 def parse(messages, response_format: type[T], tools: list[type[S]] | None = None) -> T:
-    tools = tools or []
-
     client = get_client()
 
-    tool_dict = {tool.__name__: tool for tool in tools}
+    openai_tools = None
+    if tools:
+        openai_tools = []
+        for tool in tools:
+            openai_tools.append(openai.pydantic_function_tool(tool))
+
+    kwargs = {}
+    tool_dict = {}
+    if tools:
+        tool_dict = {tool.__name__: tool for tool in tools}
+        kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
 
     response = client.beta.chat.completions.parse(
         messages=messages,
         model=settings.model,
         temperature=settings.temperature,
         response_format=response_format,
-        tools=[openai.pydantic_function_tool(tool) for tool in tools],
+        **kwargs,  # type: ignore
     )
 
     # handle tool calls
