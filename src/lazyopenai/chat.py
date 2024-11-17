@@ -1,13 +1,11 @@
 from collections.abc import Iterable
 from typing import TypeVar
 
-from openai.types import CreateEmbeddingResponse
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from .utils import get_async_client
 from .utils import get_client
-from .utils import get_embedding_model
 from .utils import get_model
 from .utils import get_temperature
 
@@ -145,4 +143,3 @@ async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_f
         raise ValueError("No completion message parsed")
 
     return parsed
-
