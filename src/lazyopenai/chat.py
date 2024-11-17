@@ -12,6 +12,8 @@ from .utils import get_temperature
 T = TypeVar("T", bound=BaseModel)
 
 
+
+
 def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
     """
     Creates a chat completion using the OpenAI API.
