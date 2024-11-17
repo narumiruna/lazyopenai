@@ -7,9 +7,6 @@ authors = [{ name = "narumi", email = "toucans-cutouts0f@icloud.com" }]
 requires-python = ">=3.11"
 dependencies = ["openai>=1.54.4", "pydantic-settings>=2.6.1"]
 
-[project.scripts]
-lazyopenai = "lazyopenai.cli:main"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
