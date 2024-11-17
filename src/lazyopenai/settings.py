@@ -9,7 +9,13 @@ class Settings(BaseSettings):
     temperature: float = Field(default=0.0, description="The OpenAI temperature setting.")
     embedding_model: str = Field(default="text-embedding-3-small", description="The OpenAI embedding model.")
 
-    model_config = SettingsConfigDict(env_file_encoding="utf-8", env_file=".env", env_prefix="openai_")
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file_encoding="utf-8",
+        env_file=".env",
+        env_prefix="openai_",
+        extra="ignore",
+    )
 
 
 settings = Settings()
