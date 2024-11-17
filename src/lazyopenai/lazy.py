@@ -8,19 +8,17 @@ from .chat import parse
 T = TypeVar("T", bound=BaseModel)
 
 
-def generate_text(prompt: str, system: str | None = None) -> str:
+def generate(
+    user: str,
+    system: str | None = None,
+    response_format: type[T] | None = None,
+) -> T | str:
     messages = []
     if system:
         messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
+    messages.append({"role": "user", "content": user})
+
+    if response_format:
+        return parse(messages, response_format)
 
     return create(messages)
-
-
-def generate_object(prompt: str, response_format: type[T], system: str | None = None) -> T:
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
-
-    return parse(messages, response_format)

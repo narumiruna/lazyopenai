@@ -1,8 +1,8 @@
-from lazyopenai import generate_text
+from lazyopenai import generate
 
 
 def main() -> None:
-    print(generate_text("Hi"))
+    print(generate("Hi"))
 
 
 if __name__ == "__main__":
