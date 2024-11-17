@@ -6,12 +6,14 @@ from .chat import create
 from .chat import parse
 
 T = TypeVar("T", bound=BaseModel)
+S = TypeVar("S", bound=BaseModel)
 
 
 def generate(
     user: str,
     system: str | None = None,
     response_format: type[T] | None = None,
+    tools: list[type[S]] | None = None,
 ) -> T | str:
     messages = []
     if system:
@@ -19,6 +21,6 @@ def generate(
     messages.append({"role": "user", "content": user})
 
     if response_format:
-        return parse(messages, response_format)
+        return parse(messages, response_format, tools=tools)
 
-    return create(messages)
+    return create(messages, tools=tools)

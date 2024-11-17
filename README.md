@@ -42,7 +42,27 @@ resp = generate("how can I solve 8x + 7 = -23", response_format=MathReasoning)
 print(resp)
 ```
 
+### Function Calling
+
+```python
+from datetime import datetime
+
+from pydantic import BaseModel
+
+from lazyopenai import generate
+
+
+class GetCurrentTime(BaseModel):
+    def call(self) -> str:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+resp = generate("What is the current time?", tools=[GetCurrentTime])
+print(resp)
+```
+
 ## TODO
 
-- [ ] Function calling
+- [x] Function calling
 - [ ] Memory
+- [ ] Async
