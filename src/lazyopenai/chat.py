@@ -1,25 +1,23 @@
-from collections.abc import Iterable
 from typing import TypeVar
 
-from openai.types import CreateEmbeddingResponse
-from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
+from .messages import Messages
+from .messages import to_openai_messages
 from .utils import get_async_client
 from .utils import get_client
-from .utils import get_embedding_model
 from .utils import get_model
 from .utils import get_temperature
 
 T = TypeVar("T", bound=BaseModel)
 
 
-def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
+def create(messages: Messages) -> str:
     """
     Creates a chat completion using the OpenAI API.
 
     Args:
-        messages (Iterable[ChatCompletionMessageParam]): The messages to be sent to the OpenAI API.
+        messages (Messages): The messages to be sent to the OpenAI API.
 
     Returns:
         str: The content of the first completion choice.
@@ -33,7 +31,7 @@ def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
 
     completion = client.chat.completions.create(
         model=model,
-        messages=messages,
+        messages=to_openai_messages(messages),
         temperature=temperature,
     )
 
@@ -47,12 +45,12 @@ def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
     return content
 
 
-async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
+async def async_create(messages: Messages) -> str:
     """
     Asynchronously creates a chat completion using the OpenAI API.
 
     Args:
-        messages (Iterable[ChatCompletionMessageParam]): The messages to be sent to the OpenAI API.
+        messages (Messages): The messages to be sent to the OpenAI API.
 
     Returns:
         str: The content of the first completion choice.
@@ -63,7 +61,7 @@ async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
 
     completion = await client.chat.completions.create(
         model=model,
-        messages=messages,
+        messages=to_openai_messages(messages),
         temperature=temperature,
     )
 
@@ -77,12 +75,12 @@ async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
     return content
 
 
-def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[T]) -> T:
+def parse(messages: Messages, response_format: type[T]) -> T:
     """
     Parses the chat completion messages using the specified response format.
 
     Args:
-        messages (Iterable[ChatCompletionMessageParam]): The chat completion messages to parse.
+        messages (Messages): The chat completion messages to parse.
         response_format (type[T]): The type to which the response should be parsed.
 
     Returns:
@@ -97,7 +95,7 @@ def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[
 
     completion = client.beta.chat.completions.parse(
         model=model,
-        messages=messages,
+        messages=to_openai_messages(messages),
         temperature=temperature,
         response_format=response_format,
     )
@@ -112,12 +110,12 @@ def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[
     return parsed
 
 
-async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[T]) -> T:
+async def async_parse(messages: Messages, response_format: type[T]) -> T:
     """
     Asynchronously parses the chat completion messages using the specified response format.
 
     Args:
-        messages (Iterable[ChatCompletionMessageParam]): The chat completion messages to parse.
+        messages (Messages): The chat completion messages to parse.
         response_format (type[T]): The type to which the response should be parsed.
 
     Returns:
@@ -132,7 +130,7 @@ async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_f
 
     completion = await client.beta.chat.completions.parse(
         model=model,
-        messages=messages,
+        messages=to_openai_messages(messages),
         temperature=temperature,
         response_format=response_format,
     )
@@ -145,4 +143,3 @@ async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_f
         raise ValueError("No completion message parsed")
 
     return parsed
-
