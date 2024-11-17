@@ -49,7 +49,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from lazyopenai.chat import create
+from lazyopenai import generate
 
 
 class GetCurrentTime(BaseModel):
@@ -57,11 +57,12 @@ class GetCurrentTime(BaseModel):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-resp = create([{"role": "user", "content": "What is the current time?"}], tools=[GetCurrentTime])
+resp = generate("What is the current time?", tools=[GetCurrentTime])
 print(resp)
 ```
 
 ## TODO
 
-- [ ] Function calling
+- [x] Function calling
 - [ ] Memory
+- [ ] Async
