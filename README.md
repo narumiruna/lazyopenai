@@ -1,6 +1,10 @@
 # Lazy OpenAI
 
+Lazy OpenAI is a Python library that simplifies interaction with OpenAI's API. It provides easy-to-use functions to generate text and structured outputs using Pydantic models.
+
 ## Installation
+
+To install Lazy OpenAI, run the following command:
 
 ```sh
 pip install lazyopenai
