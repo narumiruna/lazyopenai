@@ -39,7 +39,7 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
                 tool_messages.append(
                     {
                         "role": "tool",
-                        "content": str(tool_function(**tool_arguments).call()),  # type: ignore
+                        "content": str(tool_function(**tool_arguments)()),  # type: ignore
                         "tool_call_id": tool_call.id,
                     }
                 )
@@ -105,7 +105,7 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
                 tool_messages.append(
                     {
                         "role": "tool",
-                        "content": str(tool_function(**tool_arguments).call()),  # type: ignore
+                        "content": str(tool_function(**tool_arguments)()),  # type: ignore
                         "tool_call_id": tool_call.id,
                     }
                 )

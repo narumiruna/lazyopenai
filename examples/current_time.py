@@ -6,7 +6,7 @@ from lazyopenai import generate
 
 
 class GetCurrentTime(BaseModel):
-    def call(self) -> str:
+    def __call__(self) -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
