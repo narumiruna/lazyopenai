@@ -2,25 +2,23 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from .completions import create
-from .completions import parse
+from .client import LazyClient
 
 T = TypeVar("T", bound=BaseModel)
-S = TypeVar("S", bound=BaseModel)
 
 
 def generate(
     user: str,
     system: str | None = None,
     response_format: type[T] | None = None,
-    tools: list[type[S]] | None = None,
+    tools: list[type[BaseModel]] | None = None,
 ) -> T | str:
-    messages = []
+    client = LazyClient(tools=tools)
     if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": user})
+        client.add_message(system, role="system")
+    client.add_message(user, role="user")
 
     if response_format:
-        return parse(messages, response_format, tools=tools)
+        return client.parse(response_format)
 
-    return create(messages, tools=tools)
+    return client.create()
