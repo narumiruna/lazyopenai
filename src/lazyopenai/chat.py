@@ -1,7 +1,5 @@
-from collections.abc import Iterable
 from typing import TypeVar
 
-from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
 from .settings import settings
@@ -11,19 +9,7 @@ from .utils import get_client
 T = TypeVar("T", bound=BaseModel)
 
 
-def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
-    """
-    Creates a chat completion using the OpenAI API.
-
-    Args:
-        messages (Iterable[ChatCompletionMessageParam]): The messages to be sent to the OpenAI API.
-
-    Returns:
-        str: The content of the first completion choice.
-
-    Raises:
-        ValueError: If no completion choices are returned or if the completion message content is empty.
-    """
+def create(messages) -> str:
     client = get_client()
 
     completion = client.chat.completions.create(
@@ -42,16 +28,7 @@ def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
     return content
 
 
-async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
-    """
-    Asynchronously creates a chat completion using the OpenAI API.
-
-    Args:
-        messages (Iterable[ChatCompletionMessageParam]): The messages to be sent to the OpenAI API.
-
-    Returns:
-        str: The content of the first completion choice.
-    """
+async def async_create(messages) -> str:
     client = get_async_client()
 
     completion = await client.chat.completions.create(
@@ -70,20 +47,7 @@ async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
     return content
 
 
-def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[T]) -> T:
-    """
-    Parses the chat completion messages using the specified response format.
-
-    Args:
-        messages (Iterable[ChatCompletionMessageParam]): The chat completion messages to parse.
-        response_format (type[T]): The type to which the response should be parsed.
-
-    Returns:
-        T: The parsed response.
-
-    Raises:
-        ValueError: If no completion choices are returned or if no completion message is parsed.
-    """
+def parse(messages, response_format: type[T]) -> T:
     client = get_client()
 
     completion = client.beta.chat.completions.parse(
@@ -103,20 +67,7 @@ def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[
     return parsed
 
 
-async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[T]) -> T:
-    """
-    Asynchronously parses the chat completion messages using the specified response format.
-
-    Args:
-        messages (Iterable[ChatCompletionMessageParam]): The chat completion messages to parse.
-        response_format (type[T]): The type to which the response should be parsed.
-
-    Returns:
-        T: The parsed response.
-
-    Raises:
-        ValueError: If no completion choices are returned or if no completion message is parsed.
-    """
+async def async_parse(messages, response_format: type[T]) -> T:
     client = get_async_client()
 
     completion = await client.beta.chat.completions.parse(
