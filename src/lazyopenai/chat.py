@@ -13,21 +13,23 @@ S = TypeVar("S", bound=BaseModel)
 
 
 def create(messages, tools: list[type[S]] | None = None) -> str:
+    tools = tools or []
+
     client = get_client()
 
-    tool_dict = {tool.__name__: tool for tool in tools} if tools else {}
+    tool_dict = {tool.__name__: tool for tool in tools}
 
     response = client.chat.completions.create(
         model=settings.model,
         messages=messages,
         temperature=settings.temperature,
-        tools=[openai.pydantic_function_tool(tool) for tool in tools] if tools else None,
+        tools=[openai.pydantic_function_tool(tool) for tool in tools],
     )
 
     # handle tool calls
     if tools and response.choices:
         choice = response.choices[0]
-        if choice.finish_reason == "tool_calls":
+        if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
             tool_messages = []
             for tool_call in choice.message.tool_calls:
                 tool_function = tool_dict.get(tool_call.function.name)
@@ -37,7 +39,7 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
                 tool_messages.append(
                     {
                         "role": "tool",
-                        "content": str(tool_function(**tool_arguments).call()),
+                        "content": str(tool_function(**tool_arguments).call()),  # type: ignore
                         "tool_call_id": tool_call.id,
                     }
                 )
@@ -76,22 +78,24 @@ async def async_create(messages) -> str:
 
 
 def parse(messages, response_format: type[T], tools: list[type[S]] | None = None) -> T:
+    tools = tools or []
+
     client = get_client()
 
-    tool_dict = {tool.__name__: tool for tool in tools} if tools else {}
+    tool_dict = {tool.__name__: tool for tool in tools}
 
     response = client.beta.chat.completions.parse(
         model=settings.model,
         messages=messages,
         temperature=settings.temperature,
         response_format=response_format,
-        tools=[openai.pydantic_function_tool(tool) for tool in tools] if tools else None,
+        tools=[openai.pydantic_function_tool(tool) for tool in tools],
     )
 
     # handle tool calls
     if tools and response.choices:
         choice = response.choices[0]
-        if choice.finish_reason == "tool_calls":
+        if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
             tool_messages = []
             for tool_call in choice.message.tool_calls:
                 tool_function = tool_dict.get(tool_call.function.name)
@@ -101,7 +105,7 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
                 tool_messages.append(
                     {
                         "role": "tool",
-                        "content": str(tool_function(**tool_arguments).call()),
+                        "content": str(tool_function(**tool_arguments).call()),  # type: ignore
                         "tool_call_id": tool_call.id,
                     }
                 )
