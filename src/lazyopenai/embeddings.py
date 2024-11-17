@@ -1,7 +1,7 @@
 from openai.types import CreateEmbeddingResponse
 
+from .settings import settings
 from .utils import get_client
-from .utils import get_embedding_model
 
 
 def create(texts: str | list[str]) -> CreateEmbeddingResponse:
@@ -21,7 +21,6 @@ def create(texts: str | list[str]) -> CreateEmbeddingResponse:
         texts = [texts]
 
     client = get_client()
-    model = get_embedding_model()
 
-    response = client.embeddings.create(input=texts, model=model)
+    response = client.embeddings.create(input=texts, model=settings.embedding_model)
     return response
