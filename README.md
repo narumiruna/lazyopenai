@@ -37,3 +37,8 @@ class MathReasoning(BaseModel):
 resp = generate("how can I solve 8x + 7 = -23", response_format=MathReasoning)
 print(resp)
 ```
+
+## TODO
+
+- [ ] Function calling
+- [ ] Memory
