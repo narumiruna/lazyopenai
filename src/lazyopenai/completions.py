@@ -12,14 +12,20 @@ T = TypeVar("T", bound=BaseModel)
 S = TypeVar("S", bound=BaseModel)
 
 
+def get_tool(tools: list[type[S]], name: str) -> type[S]:
+    for tool in tools:
+        if tool.__name__ == name:
+            return tool
+    raise ValueError(f"Tool {name} not found")
+
+
 def create(messages, tools: list[type[S]] | None = None) -> str:
     client = get_client()
 
     kwargs = {}
-    tool_dict = {}
     if tools:
-        tool_dict = {tool.__name__: tool for tool in tools}
         kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
+
     response = client.chat.completions.create(
         messages=messages,
         model=settings.model,
@@ -33,7 +39,7 @@ def create(messages, tools: list[type[S]] | None = None) -> str:
         if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
             tool_messages = []
             for tool_call in choice.message.tool_calls:
-                tool_function = tool_dict.get(tool_call.function.name)
+                tool_function = get_tool(tools, tool_call.function.name)
                 if not tool_function:
                     continue
                 tool_arguments = json.loads(tool_call.function.arguments)
@@ -82,16 +88,8 @@ async def async_create(messages) -> str:
 def parse(messages, response_format: type[T], tools: list[type[S]] | None = None) -> T:
     client = get_client()
 
-    openai_tools = None
-    if tools:
-        openai_tools = []
-        for tool in tools:
-            openai_tools.append(openai.pydantic_function_tool(tool))
-
     kwargs = {}
-    tool_dict = {}
     if tools:
-        tool_dict = {tool.__name__: tool for tool in tools}
         kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
 
     response = client.beta.chat.completions.parse(
@@ -108,7 +106,7 @@ def parse(messages, response_format: type[T], tools: list[type[S]] | None = None
         if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
             tool_messages = []
             for tool_call in choice.message.tool_calls:
-                tool_function = tool_dict.get(tool_call.function.name)
+                tool_function = get_tool(tools, tool_call.function.name)
                 if not tool_function:
                     continue
                 tool_arguments = json.loads(tool_call.function.arguments)
