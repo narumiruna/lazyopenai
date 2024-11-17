@@ -45,19 +45,25 @@ print(resp)
 ### Function Calling
 
 ```python
-from datetime import datetime
-
 from pydantic import BaseModel
+from pydantic import Field
 
 from lazyopenai import generate
 
 
-class GetCurrentTime(BaseModel):
+class AddNumbers(BaseModel):
+    a: float = Field(..., description="The first integer")
+    b: float = Field(..., description="The second integer")
+
     def __call__(self) -> str:
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print("function called")
+        return str(self.a + self.b)
 
 
-resp = generate("What is the current time?", tools=[GetCurrentTime])
+resp = generate(
+    "100 + 10 = ?",
+    tools=[AddNumbers],
+)
 print(resp)
 ```
 
