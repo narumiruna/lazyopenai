@@ -2,8 +2,8 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from .chat import create
-from .chat import parse
+from .completions import create
+from .completions import parse
 
 T = TypeVar("T", bound=BaseModel)
 S = TypeVar("S", bound=BaseModel)
