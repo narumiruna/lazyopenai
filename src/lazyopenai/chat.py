@@ -4,14 +4,11 @@ from typing import TypeVar
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel
 
+from .settings import settings
 from .utils import get_async_client
 from .utils import get_client
-from .utils import get_model
-from .utils import get_temperature
 
 T = TypeVar("T", bound=BaseModel)
-
-
 
 
 def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
@@ -28,13 +25,11 @@ def create(messages: Iterable[ChatCompletionMessageParam]) -> str:
         ValueError: If no completion choices are returned or if the completion message content is empty.
     """
     client = get_client()
-    model = get_model()
-    temperature = get_temperature()
 
     completion = client.chat.completions.create(
-        model=model,
+        model=settings.model,
         messages=messages,
-        temperature=temperature,
+        temperature=settings.temperature,
     )
 
     if not completion.choices:
@@ -58,13 +53,11 @@ async def async_create(messages: Iterable[ChatCompletionMessageParam]) -> str:
         str: The content of the first completion choice.
     """
     client = get_async_client()
-    model = get_model()
-    temperature = get_temperature()
 
     completion = await client.chat.completions.create(
-        model=model,
+        model=settings.model,
         messages=messages,
-        temperature=temperature,
+        temperature=settings.temperature,
     )
 
     if not completion.choices:
@@ -92,13 +85,11 @@ def parse(messages: Iterable[ChatCompletionMessageParam], response_format: type[
         ValueError: If no completion choices are returned or if no completion message is parsed.
     """
     client = get_client()
-    model = get_model()
-    temperature = get_temperature()
 
     completion = client.beta.chat.completions.parse(
-        model=model,
+        model=settings.model,
         messages=messages,
-        temperature=temperature,
+        temperature=settings.temperature,
         response_format=response_format,
     )
 
@@ -127,13 +118,11 @@ async def async_parse(messages: Iterable[ChatCompletionMessageParam], response_f
         ValueError: If no completion choices are returned or if no completion message is parsed.
     """
     client = get_async_client()
-    model = get_model()
-    temperature = get_temperature()
 
     completion = await client.beta.chat.completions.parse(
-        model=model,
+        model=settings.model,
         messages=messages,
-        temperature=temperature,
+        temperature=settings.temperature,
         response_format=response_format,
     )
 
