@@ -17,54 +17,32 @@ class LazyClient:
     def __init__(self, tools: list[type[LazyTool]] | None = None) -> None:
         self.client = OpenAI(api_key=settings.api_key)
         self.messages: list = []
-        self.tools = {tool.__name__: tool for tool in tools} if tools else None
+        self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
-    def _create(self, messages) -> ChatCompletion:
+    def _generate(self, messages, response_format: type[T] | None = None):
+        kwargs = {
+            "messages": messages,
+            "model": settings.model,
+            "temperature": settings.temperature,
+        }
         if self.tools:
-            return self.client.chat.completions.create(
-                messages=messages,
-                model=settings.model,
-                temperature=settings.temperature,
-                tools=[openai.pydantic_function_tool(tool) for tool in self.tools.values()],
-            )
+            kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in self.tools.values()]
+        if response_format:
+            kwargs["response_format"] = response_format
+
+        if response_format:
+            return self.client.beta.chat.completions.parse(**kwargs)
         else:
-            return self.client.chat.completions.create(
-                messages=messages,
-                model=settings.model,
-                temperature=settings.temperature,
-            )
+            return self.client.chat.completions.create(**kwargs)
 
-    def _parse(self, messages, response_format: type[T]):
-        if self.tools:
-            return self.client.beta.chat.completions.parse(
-                messages=messages,
-                model=settings.model,
-                temperature=settings.temperature,
-                tools=[openai.pydantic_function_tool(tool) for tool in self.tools.values()],
-                response_format=response_format,
-            )
-        else:
-            return self.client.beta.chat.completions.parse(
-                messages=messages,
-                model=settings.model,
-                temperature=settings.temperature,
-                response_format=response_format,
-            )
-
-    def _handle_tool_calls(self, response: ChatCompletion, response_format: type[T] | None = None):
-        if not self.tools:
-            return response
-
-        if not response.choices:
+    def _process_tool_calls_in_response(self, response: ChatCompletion, response_format: type[T] | None = None):
+        if not self.tools or not response.choices:
             return response
 
         choice = response.choices[0]
         self.messages += [choice.message]
 
-        if choice.finish_reason != "tool_calls":
-            return response
-
-        if not choice.message.tool_calls:
+        if choice.finish_reason != "tool_calls" or not choice.message.tool_calls:
             return response
 
         for tool_call in choice.message.tool_calls:
@@ -81,36 +59,24 @@ class LazyClient:
                 }
             ]
 
-        if response_format:
-            return self._parse(self.messages, response_format)
-        else:
-            return self._create(self.messages)
+        return self._generate(self.messages, response_format=response_format)
 
-    def add_message(self, content: str, role: Literal["system", "user", "assistant"] = "user") -> None:
+    def add_message(self, content: str, role: Literal["system", "user", "assistant"] = "user"):
         self.messages += [{"role": role, "content": content}]
 
-    def create(self) -> str:
-        response = self._create(self.messages)
-        response = self._handle_tool_calls(response)
-
+    def generate(self, response_format: type[T] | None = None) -> T | str:
+        response = self._process_tool_calls_in_response(self._generate(self.messages, response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
 
-        content = response.choices[0].message.content
-        if not content:
-            raise ValueError("No completion message content")
+        response_message = response.choices[0].message
 
-        return content
+        if response_format:
+            if not response_message.parsed:
+                raise ValueError("No completion parsed content returned")
+            return response_message.parsed
 
-    def parse(self, response_format: type[T]) -> T:
-        response = self._parse(self.messages, response_format)
-        response = self._handle_tool_calls(response, response_format)
+        if not response_message.content:
+            raise ValueError("No completion content returned")
 
-        if not response.choices:
-            raise ValueError("No completion choices returned")
-
-        parsed = response.choices[0].message.parsed
-        if not parsed:
-            raise ValueError("No completion message parsed")
-
-        return parsed
+        return response_message.content

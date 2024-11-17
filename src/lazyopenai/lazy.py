@@ -19,7 +19,4 @@ def generate(
         client.add_message(system, role="system")
     client.add_message(user, role="user")
 
-    if response_format:
-        return client.parse(response_format)
-
-    return client.create()
+    return client.generate(response_format=response_format)

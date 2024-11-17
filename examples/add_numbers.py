@@ -5,12 +5,12 @@ from lazyopenai.types import LazyTool
 
 
 class AddNumbers(LazyTool):
-    a: float = Field(..., description="The first integer")
-    b: float = Field(..., description="The second integer")
+    a: float = Field(..., description="First number to add")
+    b: float = Field(..., description="Second number to add")
 
-    def __call__(self) -> str:
+    def __call__(self) -> float:
         print("function called")
-        return str(self.a + self.b)
+        return self.a + self.b
 
 
 def main() -> None:
