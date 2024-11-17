@@ -1,10 +1,10 @@
-from pydantic import BaseModel
 from pydantic import Field
 
 from lazyopenai import generate
+from lazyopenai.types import LazyTool
 
 
-class AddNumbers(BaseModel):
+class AddNumbers(LazyTool):
     a: float = Field(..., description="The first integer")
     b: float = Field(..., description="The second integer")
 
