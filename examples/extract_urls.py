@@ -9,7 +9,7 @@ class URL(BaseModel):
     contain_video: bool = Field(..., description="Whether the URL contains a video")
 
 
-class URLList(BaseModel):
+class URLs(BaseModel):
     urls: list[URL] = Field(..., description="The list of URLs")
 
 
@@ -19,7 +19,7 @@ def main() -> None:
     https://www.youtube.com/watch?v=9bZkp7q19f0
     """.strip()
 
-    resp = generate(prompt, response_format=URLList)
+    resp = generate(prompt, response_format=URLs)
     print(resp)
 
 
