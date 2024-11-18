@@ -5,7 +5,7 @@ import openai
 from openai import OpenAI
 from pydantic import BaseModel
 
-from .settings import settings
+from ..settings import settings
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -15,10 +15,7 @@ def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
-    kwargs = {}
-    if tools:
-        kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
-
+    kwargs = {"tools": [openai.pydantic_function_tool(tool) for tool in tools]} if tools else {}
     response = client.chat.completions.create(
         messages=messages,
         model=settings.model,
@@ -64,10 +61,7 @@ def parse(messages, response_format: type[T], tools: list[type[BaseModel]] | Non
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
-    kwargs = {}
-    if tools:
-        kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in tools]
-
+    kwargs = {"tools": [openai.pydantic_function_tool(tool) for tool in tools]} if tools else {}
     response = client.beta.chat.completions.parse(
         messages=messages,
         model=settings.model,

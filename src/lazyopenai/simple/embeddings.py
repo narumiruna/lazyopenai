@@ -1,10 +1,10 @@
 from openai import OpenAI
 from openai.types import CreateEmbeddingResponse
 
-from .settings import settings
+from ..settings import settings
 
 
-def create(texts: str | list[str]) -> CreateEmbeddingResponse:
+def create_embeddings(texts: str | list[str]) -> CreateEmbeddingResponse:
     if isinstance(texts, str):
         texts = [texts]
 
