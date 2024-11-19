@@ -1,16 +1,13 @@
 import json
 from typing import Literal
-from typing import TypeVar
 
 import openai
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
-from pydantic import BaseModel
 
 from .settings import settings
 from .types import LazyTool
-
-ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
+from .types import ResponseFormatT
 
 
 class LazyClient:

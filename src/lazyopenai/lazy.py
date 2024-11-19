@@ -1,6 +1,6 @@
 from .client import LazyClient
-from .client import ResponseFormatT
 from .types import LazyTool
+from .types import ResponseFormatT
 
 
 def generate(
