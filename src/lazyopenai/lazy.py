@@ -1,19 +1,14 @@
-from typing import TypeVar
-
-from pydantic import BaseModel
-
 from .client import LazyClient
+from .client import ResponseFormatT
 from .types import LazyTool
-
-T = TypeVar("T", bound=BaseModel)
 
 
 def generate(
     user: str,
     system: str | None = None,
-    response_format: type[T] | None = None,
+    response_format: type[ResponseFormatT] | None = None,
     tools: list[type[LazyTool]] | None = None,
-) -> T | str:
+) -> ResponseFormatT | str:
     client = LazyClient(tools=tools)
     if system:
         client.add_message(system, role="system")

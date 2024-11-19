@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from .settings import settings
 from .types import LazyTool
 
-T = TypeVar("T", bound=BaseModel)
+ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
 class LazyClient:
@@ -19,7 +19,7 @@ class LazyClient:
         self.messages: list = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
-    def _generate(self, messages, response_format: type[T] | None = None):
+    def _generate(self, messages, response_format: type[ResponseFormatT] | None = None):
         kwargs = {
             "messages": messages,
             "model": settings.model,
@@ -35,7 +35,9 @@ class LazyClient:
         else:
             return self.client.chat.completions.create(**kwargs)
 
-    def _process_tool_calls_in_response(self, response: ChatCompletion, response_format: type[T] | None = None):
+    def _process_tool_calls_in_response(
+        self, response: ChatCompletion, response_format: type[ResponseFormatT] | None = None
+    ):
         if not self.tools or not response.choices:
             return response
 
@@ -64,7 +66,7 @@ class LazyClient:
     def add_message(self, content: str, role: Literal["system", "user", "assistant"] = "user"):
         self.messages += [{"role": role, "content": content}]
 
-    def generate(self, response_format: type[T] | None = None) -> T | str:
+    def generate(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
         response = self._process_tool_calls_in_response(self._generate(self.messages, response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
