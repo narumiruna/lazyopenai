@@ -50,18 +50,21 @@ class LazyClient:
                 continue
 
             tool_args = json.loads(tool_call.function.arguments)
-            self.messages += [
-                {
-                    "role": "tool",
-                    "content": str(tool(**tool_args)()),
-                    "tool_call_id": tool_call.id,
-                }
-            ]
+            self.add_tool_message(str(tool(**tool_args)()), tool_call.id)
 
         return self._generate(self.messages, response_format=response_format)
 
-    def add_message(self, content: str, role: Literal["system", "user", "assistant"] = "user"):
+    def add_message(self, content: str, role: Literal["system", "user", "assistant"] = "user") -> None:
         self.messages += [{"role": role, "content": content}]
+
+    def add_tool_message(self, content: str, tool_call_id: str) -> None:
+        self.messages += [
+            {
+                "role": "tool",
+                "content": content,
+                "tool_call_id": tool_call_id,
+            }
+        ]
 
     def generate(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
         response = self._process_tool_calls_in_response(self._generate(self.messages, response_format), response_format)
