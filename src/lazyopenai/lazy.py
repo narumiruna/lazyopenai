@@ -11,7 +11,7 @@ def generate(
 ) -> ResponseFormatT | str:
     client = LazyClient(tools=tools)
     if system:
-        client.add_message(system, role="system")
-    client.add_message(user, role="user")
+        client.add_system_message(system)
+    client.add_user_message(user)
 
     return client.generate(response_format=response_format)
