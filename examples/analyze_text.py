@@ -3,10 +3,10 @@
 from pydantic import Field
 
 from lazyopenai import generate
-from lazyopenai.types import LazyTool
+from lazyopenai.types import BaseTool
 
 
-class AnalyzeText(LazyTool):
+class AnalyzeText(BaseTool):
     """
     Analyze text and return statistics using only Python's standard library.
     Returns word count, character count, average word length, and most common words.

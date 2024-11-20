@@ -10,10 +10,11 @@ from openai.types.chat import ChatCompletionSystemMessageParam
 from openai.types.chat import ChatCompletionToolMessageParam
 from openai.types.chat import ChatCompletionUserMessageParam
 from openai.types.chat.chat_completion import ChatCompletion
+from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletionMessage
 
 from .settings import settings
-from .types import LazyTool
+from .types import BaseTool
 from .types import ResponseFormatT
 
 Message: TypeAlias = (
@@ -26,12 +27,14 @@ Message: TypeAlias = (
 
 
 class LazyClient:
-    def __init__(self, tools: list[type[LazyTool]] | None = None) -> None:
+    def __init__(self, tools: list[type[BaseTool]] | None = None) -> None:
         self.client = OpenAI(api_key=settings.api_key)
         self.messages: list[Message] = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
-    def _generate(self, messages, response_format: type[ResponseFormatT] | None = None):
+    def _generate(
+        self, messages, response_format: type[ResponseFormatT] | None = None
+    ) -> ChatCompletion | ParsedChatCompletion:
         kwargs = {
             "messages": messages,
             "model": settings.model,
@@ -42,12 +45,17 @@ class LazyClient:
         if response_format:
             kwargs["response_format"] = response_format
 
+        response: ChatCompletion | ParsedChatCompletion
         if response_format:
-            return self.client.beta.chat.completions.parse(**kwargs)
+            response = self.client.beta.chat.completions.parse(**kwargs)
         else:
-            return self.client.chat.completions.create(**kwargs)
+            response = self.client.chat.completions.create(**kwargs)
 
-    def _handle_response(self, response: ChatCompletion, response_format: type[ResponseFormatT] | None = None):
+        return response
+
+    def _handle_response(
+        self, response: ChatCompletion | ParsedChatCompletion, response_format: type[ResponseFormatT] | None = None
+    ):
         if not self.tools:
             return response
 
