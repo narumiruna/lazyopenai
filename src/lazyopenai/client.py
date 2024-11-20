@@ -1,4 +1,3 @@
-import json
 from typing import Literal
 
 import openai
@@ -35,22 +34,28 @@ class LazyClient:
     def _process_tool_calls_in_response(
         self, response: ChatCompletion, response_format: type[ResponseFormatT] | None = None
     ):
-        if not self.tools or not response.choices:
+        if not self.tools:
             return response
 
-        choice = response.choices[0]
-        self.messages += [choice.message]
-
-        if choice.finish_reason != "tool_calls" or not choice.message.tool_calls:
+        if not response.choices:
             return response
 
-        for tool_call in choice.message.tool_calls:
+        finish_reason = response.choices[0].finish_reason
+        if finish_reason != "tool_calls":
+            return response
+
+        response_message = response.choices[0].message
+        if not response_message.tool_calls:
+            return response
+        self.messages += [response_message]
+
+        for tool_call in response_message.tool_calls:
             tool = self.tools.get(tool_call.function.name)
             if not tool:
                 continue
 
-            tool_args = json.loads(tool_call.function.arguments)
-            self.add_tool_message(str(tool(**tool_args)()), tool_call.id)
+            function_result = tool.call(tool_call.function.arguments)
+            self.add_tool_message(function_result, tool_call.id)
 
         return self._generate(self.messages, response_format=response_format)
 
