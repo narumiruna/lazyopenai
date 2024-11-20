@@ -6,7 +6,7 @@ from pydantic import BaseModel
 ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
-class LazyTool(BaseModel):
+class BaseTool(BaseModel):
     def __call__(self):
         raise NotImplementedError
 

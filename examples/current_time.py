@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from lazyopenai import generate
-from lazyopenai.types import LazyTool
+from lazyopenai.types import BaseTool
 
 
-class GetCurrentTime(LazyTool):
+class GetCurrentTime(BaseTool):
     def __call__(self) -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-class CurrentTime(LazyTool):
+class CurrentTime(BaseTool):
     current_time: str
 
 
