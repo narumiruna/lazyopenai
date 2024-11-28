@@ -26,13 +26,13 @@ Message: TypeAlias = (
 )
 
 
-class LazyClient:
+class Chat:
     def __init__(self, tools: list[type[BaseTool]] | None = None) -> None:
         self.client = OpenAI(api_key=settings.api_key)
         self.messages: list[Message] = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
-    def _generate(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
+    def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
         kwargs = {
             "messages": self.messages,
             "model": settings.model,
@@ -40,6 +40,7 @@ class LazyClient:
         }
         if self.tools:
             kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in self.tools.values()]
+
         if response_format:
             kwargs["response_format"] = response_format
 
@@ -77,7 +78,7 @@ class LazyClient:
             function_result = tool.call(tool_call.function.arguments)
             self.add_tool_message(function_result, tool_call.id)
 
-        return self._generate(self.messages, response_format=response_format)
+        return self._create(self.messages, response_format=response_format)
 
     def add_message(self, content: str, role: Literal["system", "user"] = "user") -> None:
         match role:
@@ -113,8 +114,8 @@ class LazyClient:
             )
         ]
 
-    def generate(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
-        response = self._handle_response(self._generate(response_format), response_format)
+    def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
+        response = self._handle_response(self._create(response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
 

@@ -1,4 +1,4 @@
-from .client import LazyClient
+from .client import Chat
 from .types import BaseTool
 from .types import ResponseFormatT
 
@@ -9,9 +9,9 @@ def generate(
     response_format: type[ResponseFormatT] | None = None,
     tools: list[type[BaseTool]] | None = None,
 ) -> ResponseFormatT | str:
-    client = LazyClient(tools=tools)
+    client = Chat(tools=tools)
     if system:
         client.add_system_message(system)
     client.add_user_message(user)
 
-    return client.generate(response_format=response_format)
+    return client.create(response_format=response_format)
