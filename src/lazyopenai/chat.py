@@ -44,6 +44,9 @@ class Chat:
         if response_format:
             kwargs["response_format"] = response_format
 
+        if settings.max_tokens:
+            kwargs["max_tokens"] = settings.max_tokens
+
         response: ChatCompletion | ParsedChatCompletion
         if response_format:
             response = self.client.beta.chat.completions.parse(**kwargs)  # type: ignore

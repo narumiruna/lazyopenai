@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     api_key: str | None = Field(default=None, description="The OpenAI API key.")
     model: str = Field(default="gpt-4o-mini", description="The OpenAI model name.")
     temperature: float = Field(default=0.0, description="The OpenAI temperature setting.")
+    max_tokens: int | None = Field(default=None, description="The OpenAI max tokens setting.")
     embedding_model: str = Field(default="text-embedding-3-small", description="The OpenAI embedding model.")
 
     model_config = SettingsConfigDict(
