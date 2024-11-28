@@ -78,7 +78,7 @@ class Chat:
             function_result = tool.call(tool_call.function.arguments)
             self.add_tool_message(function_result, tool_call.id)
 
-        return self._create(self.messages, response_format=response_format)
+        return self._create(response_format=response_format)
 
     def add_message(self, content: str, role: Literal["system", "user"] = "user") -> None:
         match role:
