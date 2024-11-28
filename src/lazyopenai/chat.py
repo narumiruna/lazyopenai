@@ -68,12 +68,13 @@ class Chat:
         if finish_reason != "tool_calls":
             return response
 
-        response_message = response.choices[0].message
-        if not response_message.tool_calls:
-            return response
-        self.messages += [response_message]
+        self.messages += [response.choices[0].message]
 
-        for tool_call in response_message.tool_calls:
+        tool_calls = response.choices[0].message.tool_calls
+        if not tool_calls:
+            return response
+
+        for tool_call in tool_calls:
             tool = self.tools.get(tool_call.function.name)
             if not tool:
                 continue
@@ -132,5 +133,4 @@ class Chat:
 
         if not response_message.content:
             raise ValueError("No completion content returned")
-
         return response_message.content
