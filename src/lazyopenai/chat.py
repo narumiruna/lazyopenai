@@ -46,9 +46,9 @@ class Chat:
 
         response: ChatCompletion | ParsedChatCompletion
         if response_format:
-            response = self.client.beta.chat.completions.parse(**kwargs)
+            response = self.client.beta.chat.completions.parse(**kwargs)  # type: ignore
         else:
-            response = self.client.chat.completions.create(**kwargs)
+            response = self.client.chat.completions.create(**kwargs)  # type: ignore
 
         return response
 
