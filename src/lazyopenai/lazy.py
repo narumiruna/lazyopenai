@@ -1,4 +1,4 @@
-from .client import Chat
+from .chat import Chat
 from .types import BaseTool
 from .types import ResponseFormatT
 
