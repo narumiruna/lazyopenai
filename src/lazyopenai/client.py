@@ -32,11 +32,9 @@ class LazyClient:
         self.messages: list[Message] = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
-    def _generate(
-        self, messages, response_format: type[ResponseFormatT] | None = None
-    ) -> ChatCompletion | ParsedChatCompletion:
+    def _generate(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
         kwargs = {
-            "messages": messages,
+            "messages": self.messages,
             "model": settings.model,
             "temperature": settings.temperature,
         }
@@ -116,7 +114,7 @@ class LazyClient:
         ]
 
     def generate(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
-        response = self._handle_response(self._generate(self.messages, response_format), response_format)
+        response = self._handle_response(self._generate(response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
 
