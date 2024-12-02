@@ -110,6 +110,12 @@ class Chat:
         logger.debug("Adding tool message with content: {} and tool_call_id: {}", content, tool_call_id)
         self.messages += [Message(content=content, role="tool", tool_call_id=tool_call_id)]
 
+    def dump_messages(self) -> list[dict]:
+        return [m.model_dump() for m in self.messages]
+
+    def load_messages(self, messages: list[dict]) -> None:
+        self.messages = [Message.model_validate(m) for m in messages]
+
     def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
         logger.debug("Creating final response with response_format: {}", response_format)
         response = self._handle_response(self._create(response_format), response_format)
