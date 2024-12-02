@@ -1,6 +1,6 @@
 from .chat import Chat
+from .chat import ResponseFormatT
 from .types import BaseTool
-from .types import ResponseFormatT
 
 
 def generate(

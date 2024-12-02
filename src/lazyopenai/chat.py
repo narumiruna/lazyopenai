@@ -1,30 +1,21 @@
 from __future__ import annotations
 
 from typing import Literal
-from typing import TypeAlias
+from typing import TypeVar
 
 import openai
 from loguru import logger
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
-from openai.types.chat import ChatCompletionSystemMessageParam
-from openai.types.chat import ChatCompletionToolMessageParam
-from openai.types.chat import ChatCompletionUserMessageParam
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
-from openai.types.chat.parsed_chat_completion import ParsedChatCompletionMessage
+from pydantic import BaseModel
 
 from .settings import settings
 from .types import BaseTool
-from .types import ResponseFormatT
+from .types import Message
 
-Message: TypeAlias = (
-    ChatCompletionMessage
-    | ChatCompletionSystemMessageParam
-    | ChatCompletionToolMessageParam
-    | ChatCompletionUserMessageParam
-    | ParsedChatCompletionMessage
-)
+ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
 class Chat:
@@ -36,8 +27,9 @@ class Chat:
 
     def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
         logger.debug("Creating chat completion with response_format: {}", response_format)
+
         kwargs = {
-            "messages": self.messages,
+            "messages": [m.model_dump() for m in self.messages],
             "model": settings.model,
             "temperature": settings.temperature,
         }
@@ -60,7 +52,9 @@ class Chat:
         return response
 
     def _handle_response(
-        self, response: ChatCompletion | ParsedChatCompletion, response_format: type[ResponseFormatT] | None = None
+        self,
+        response: ChatCompletion | ParsedChatCompletion,
+        response_format: type[ResponseFormatT] | None = None,
     ):
         logger.debug("Handling response: {}", response)
         if not self.tools:
@@ -74,7 +68,7 @@ class Chat:
         if finish_reason != "tool_calls":
             return response
 
-        self.messages += [response.choices[0].message]
+        self.add_assistant_message(response.choices[0].message)
 
         tool_calls = response.choices[0].message.tool_calls
         if not tool_calls:
@@ -101,33 +95,20 @@ class Chat:
             case _:
                 raise ValueError(f"Invalid role: {role}")
 
+    def add_assistant_message(self, message: ChatCompletionMessage) -> None:
+        self.messages += [Message.model_validate(message.model_dump(exclude_none=True))]
+
     def add_user_message(self, content: str) -> None:
         logger.debug("Adding user message with content: {}", content)
-        self.messages += [
-            ChatCompletionUserMessageParam(
-                content=content,
-                role="user",
-            )
-        ]
+        self.messages += [Message(content=content, role="user")]
 
     def add_system_message(self, content: str) -> None:
         logger.debug("Adding system message with content: {}", content)
-        self.messages += [
-            ChatCompletionSystemMessageParam(
-                content=content,
-                role="system",
-            )
-        ]
+        self.messages += [Message(content=content, role="system")]
 
     def add_tool_message(self, content: str, tool_call_id: str) -> None:
         logger.debug("Adding tool message with content: {} and tool_call_id: {}", content, tool_call_id)
-        self.messages += [
-            ChatCompletionToolMessageParam(
-                content=content,
-                role="tool",
-                tool_call_id=tool_call_id,
-            )
-        ]
+        self.messages += [Message(content=content, role="tool", tool_call_id=tool_call_id)]
 
     def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
         logger.debug("Creating final response with response_format: {}", response_format)
