@@ -15,3 +15,7 @@ def generate(
     client.add_user_message(user)
 
     return client.create(response_format=response_format)
+
+
+def create_chat(tools: list[type[BaseTool]] | None = None) -> Chat:
+    return Chat(tools=tools)
