@@ -5,12 +5,12 @@ from typing import TypeVar
 
 import openai
 from loguru import logger
-from openai import OpenAI
 from openai.types.chat import ChatCompletionMessage
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
 from pydantic import BaseModel
 
+from .client import get_openai_client
 from .settings import settings
 from .types import BaseTool
 from .types import Message
@@ -21,7 +21,7 @@ ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 class Chat:
     def __init__(self, tools: list[type[BaseTool]] | None = None) -> None:
         logger.debug("Initializing Chat with tools: {}", tools)
-        self.client = OpenAI(api_key=settings.api_key)
+        self.client = get_openai_client()
         self.messages: list[Message] = []
         self.tools = {tool.__name__: tool for tool in tools} if tools else {}
 
@@ -30,8 +30,8 @@ class Chat:
 
         kwargs = {
             "messages": [m.model_dump() for m in self.messages],
-            "model": settings.model,
-            "temperature": settings.temperature,
+            "model": settings.openai_model,
+            "temperature": settings.openai_temperature,
         }
         if self.tools:
             kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in self.tools.values()]
@@ -39,8 +39,8 @@ class Chat:
         if response_format:
             kwargs["response_format"] = response_format
 
-        if settings.max_tokens:
-            kwargs["max_tokens"] = settings.max_tokens
+        if settings.openai_max_tokens:
+            kwargs["max_tokens"] = settings.openai_max_tokens
 
         response: ChatCompletion | ParsedChatCompletion
         if response_format:

@@ -2,24 +2,24 @@ import json
 from typing import TypeVar
 
 import openai
-from openai import OpenAI
 from pydantic import BaseModel
 
+from ..client import get_openai_client
 from ..settings import settings
 
 T = TypeVar("T", bound=BaseModel)
 
 
 def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
-    client = OpenAI(api_key=settings.api_key)
+    client = get_openai_client()
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
     kwargs = {"tools": [openai.pydantic_function_tool(tool) for tool in tools]} if tools else {}
     response = client.chat.completions.create(
         messages=messages,
-        model=settings.model,
-        temperature=settings.temperature,
+        model=settings.openai_model,
+        temperature=settings.openai_temperature,
         **kwargs,  # type: ignore
     )
 
@@ -42,8 +42,8 @@ def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
                 )
             response = client.chat.completions.create(
                 messages=messages + [choice.message] + tool_messages,
-                model=settings.model,
-                temperature=settings.temperature,
+                model=settings.openai_model,
+                temperature=settings.openai_temperature,
             )
 
     if not response.choices:
@@ -57,15 +57,15 @@ def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
 
 
 def parse(messages, response_format: type[T], tools: list[type[BaseModel]] | None = None) -> T:
-    client = OpenAI(api_key=settings.api_key)
+    client = get_openai_client()
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
     kwargs = {"tools": [openai.pydantic_function_tool(tool) for tool in tools]} if tools else {}
     response = client.beta.chat.completions.parse(
         messages=messages,
-        model=settings.model,
-        temperature=settings.temperature,
+        model=settings.openai_model,
+        temperature=settings.openai_temperature,
         response_format=response_format,
         **kwargs,  # type: ignore
     )
@@ -89,8 +89,8 @@ def parse(messages, response_format: type[T], tools: list[type[BaseModel]] | Non
                 )
             response = client.beta.chat.completions.parse(
                 messages=messages + [choice.message] + tool_messages,
-                model=settings.model,
-                temperature=settings.temperature,
+                model=settings.openai_model,
+                temperature=settings.openai_temperature,
                 response_format=response_format,
             )
 
