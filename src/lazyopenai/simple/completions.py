@@ -5,13 +5,14 @@ import openai
 from pydantic import BaseModel
 
 from ..client import get_openai_client
-from ..settings import settings
+from ..settings import get_settings
 
 T = TypeVar("T", bound=BaseModel)
 
 
 def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
     client = get_openai_client()
+    settings = get_settings()
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
@@ -58,6 +59,7 @@ def create(messages, tools: list[type[BaseModel]] | None = None) -> str:
 
 def parse(messages, response_format: type[T], tools: list[type[BaseModel]] | None = None) -> T:
     client = get_openai_client()
+    settings = get_settings()
 
     tool_map = {tool.__name__: tool for tool in tools} if tools else {}
 
