@@ -4,17 +4,19 @@ from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    api_key: str | None = Field(default=None, description="The OpenAI API key.")
-    model: str = Field(default="gpt-4o-mini", description="The OpenAI model name.")
-    temperature: float = Field(default=0.0, description="The OpenAI temperature setting.")
-    max_tokens: int | None = Field(default=None, description="The OpenAI max tokens setting.")
-    embedding_model: str = Field(default="text-embedding-3-small", description="The OpenAI embedding model.")
+    openai_api_key: str | None = Field(default=None, description="The OpenAI API key.")
+    openai_model: str = Field(default="gpt-4o-mini", description="The OpenAI model name.")
+    openai_temperature: float = Field(default=0.0, description="The OpenAI temperature setting.")
+    openai_max_tokens: int | None = Field(default=None, description="The OpenAI max tokens setting.")
+    openai_embedding_model: str = Field(default="text-embedding-3-small", description="The OpenAI embedding model.")
+    openai_api_version: str = Field(default="2024-10-01-preview", description="The OpenAI API version.")
+
+    # azure
+    azure_openai_api_key: str | None = Field(default=None, description="The Azure OpenAI API key.")
+    azure_openai_endpoint: str | None = Field(default=None, description="The Azure OpenAI endpoint.")
 
     model_config = SettingsConfigDict(
-        case_sensitive=True,
         env_file_encoding="utf-8",
-        env_file=".env",
-        env_prefix="openai_",
         extra="ignore",
     )
 
