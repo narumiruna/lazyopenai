@@ -3,11 +3,13 @@ from functools import cache
 from openai import AzureOpenAI
 from openai import OpenAI
 
-from .settings import settings
+from .settings import get_settings
 
 
 @cache
 def get_openai_client() -> OpenAI | AzureOpenAI:
+    settings = get_settings()
+
     if settings.openai_api_key and settings.azure_openai_api_key:
         raise ValueError("Both OpenAI and Azure OpenAI API keys are set. Please set only one.")
 
