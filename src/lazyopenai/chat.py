@@ -27,7 +27,7 @@ class Chat:
         self.settings = get_settings()
 
     def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
-        logger.debug("Creating chat completion with response_format: {}", response_format)
+        logger.debug("Creating chat completion")
 
         kwargs = {
             "messages": self.dump_messages(),
@@ -35,9 +35,11 @@ class Chat:
             "temperature": self.settings.openai_temperature,
         }
         if self.tools:
+            logger.info("tools: {}", self.tools)
             kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in self.tools.values()]
 
         if response_format:
+            logger.info("response_format: {}", response_format)
             kwargs["response_format"] = response_format
 
         if self.settings.openai_max_tokens:
@@ -57,7 +59,7 @@ class Chat:
         response: ChatCompletion | ParsedChatCompletion,
         response_format: type[ResponseFormatT] | None = None,
     ):
-        logger.debug("Handling response: {}", response)
+        logger.debug("Handling response")
         if not self.tools:
             return response
 
