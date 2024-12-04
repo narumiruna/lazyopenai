@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import Literal
 from typing import TypeVar
 
-import openai
+try:
+    from langfuse.openai import openai  # type: ignore
+except ImportError:
+    import openai
 from loguru import logger
 from openai.types.chat import ChatCompletionMessage
 from openai.types.chat.chat_completion import ChatCompletion
