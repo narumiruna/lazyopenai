@@ -120,7 +120,7 @@ class Chat:
         self.messages = [Message.model_validate(m) for m in messages]
 
     def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
-        logger.debug("Creating final response with response_format: {}", response_format)
+        logger.debug("Creating final response")
         response = self._handle_response(self._create(response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
@@ -129,6 +129,7 @@ class Chat:
         self.messages += [response_message]
 
         if response_format:
+            logger.info("response_format: {}", response_format)
             if not response_message.parsed:
                 raise ValueError("No completion parsed content returned")
             return response_message.parsed
