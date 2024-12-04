@@ -126,7 +126,7 @@ class Chat:
             raise ValueError("No completion choices returned")
 
         response_message = response.choices[0].message
-        self.messages += [response_message]
+        self.add_assistant_message(response_message)
 
         if response_format:
             logger.info("response_format: {}", response_format)
