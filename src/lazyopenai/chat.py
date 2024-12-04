@@ -30,7 +30,7 @@ class Chat:
         logger.debug("Creating chat completion with response_format: {}", response_format)
 
         kwargs = {
-            "messages": [m.model_dump() for m in self.messages],
+            "messages": self.dump_messages(),
             "model": self.settings.openai_model,
             "temperature": self.settings.openai_temperature,
         }
