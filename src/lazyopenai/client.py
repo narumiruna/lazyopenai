@@ -1,9 +1,13 @@
 from functools import cache
 
-from openai import AzureOpenAI
-from openai import OpenAI
-
 from .settings import get_settings
+
+try:
+    from langfuse.openai import AzureOpenAI  # type: ignore
+    from langfuse.openai import OpenAI  # type: ignore
+except ImportError:
+    from openai import AzureOpenAI
+    from openai import OpenAI
 
 
 @cache
