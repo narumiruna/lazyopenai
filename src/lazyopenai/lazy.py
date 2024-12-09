@@ -4,7 +4,7 @@ from .types import BaseTool
 
 
 def generate(
-    user: str,
+    messages: str | list[str],
     system: str | None = None,
     response_format: type[ResponseFormatT] | None = None,
     tools: list[type[BaseTool]] | None = None,
@@ -12,7 +12,12 @@ def generate(
     client = Chat(tools=tools)
     if system:
         client.add_system_message(system)
-    client.add_user_message(user)
+
+    if isinstance(messages, str):
+        messages = [messages]
+
+    for message in messages:
+        client.add_user_message(message)
 
     return client.create(response_format=response_format)
 
