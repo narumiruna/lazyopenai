@@ -55,6 +55,11 @@ class Chat:
             response = self.client.chat.completions.create(**kwargs)  # type: ignore
 
         logger.debug("Chat completion created: {}", response)
+
+        if not response.choices:
+            return response
+
+        self.add_assistant_message(response.choices[0].message)
         return response
 
     def _handle_response(
@@ -73,8 +78,6 @@ class Chat:
         logger.debug("Finish reason: {}", finish_reason)
         if finish_reason != "tool_calls":
             return response
-
-        self.add_assistant_message(response.choices[0].message)
 
         tool_calls = response.choices[0].message.tool_calls
         if not tool_calls:
@@ -129,8 +132,6 @@ class Chat:
             raise ValueError("No completion choices returned")
 
         response_message = response.choices[0].message
-        self.add_assistant_message(response_message)
-
         if response_format:
             logger.info("response_format: {}", response_format)
             if not response_message.parsed:
