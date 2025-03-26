@@ -3,26 +3,30 @@ from __future__ import annotations
 from typing import Literal
 from typing import TypeVar
 
-try:
-    from langfuse.openai import openai  # type: ignore
-except ImportError:
-    import openai
 from loguru import logger
+
+try:
+    from langfuse.openai import openai  # type: ignore # noqa
+except ImportError:
+    logger.warning("Using local OpenAI API client")
+import json
+from collections.abc import Callable
+
 from openai.types.chat import ChatCompletionMessage
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
 from pydantic import BaseModel
 
 from .client import get_openai_client
+from .function_schema import generate_function_schema
 from .settings import get_settings
-from .types import BaseTool
 from .types import Message
 
 ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
 class Chat:
-    def __init__(self, tools: list[type[BaseTool]] | None = None) -> None:
+    def __init__(self, tools: list[Callable] | None = None) -> None:
         logger.debug("Initializing Chat with tools: {}", tools)
         self.client = get_openai_client()
         self.messages: list[Message] = []
@@ -39,7 +43,7 @@ class Chat:
         }
         if self.tools:
             logger.info("tools: {}", self.tools)
-            kwargs["tools"] = [openai.pydantic_function_tool(tool) for tool in self.tools.values()]
+            kwargs["tools"] = [generate_function_schema(tool) for tool in self.tools.values()]
 
         if response_format:
             logger.info("response_format: {}", response_format)
@@ -89,8 +93,9 @@ class Chat:
                 continue
 
             logger.debug("Calling tool: {}", tool_call.function.name)
-            function_result = tool.call(tool_call.function.arguments)
-            self.add_tool_message(function_result, tool_call.id)
+
+            function_result = tool(**json.loads(tool_call.function.arguments))
+            self.add_tool_message(str(function_result), tool_call.id)
 
         return self._create(response_format=response_format)
 
