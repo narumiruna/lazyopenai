@@ -28,6 +28,7 @@ dev = [
     "ruff>=0.7.4",
     "types-pyyaml>=6.0.12.20240917",
     "rich>=13.9.4",
+    "pip>=25.0.1",
 ]
 
 [tool.ruff]
