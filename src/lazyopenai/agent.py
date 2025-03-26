@@ -22,43 +22,38 @@ ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 class Agent:
     def __init__(self, tools: list[Callable] | None = None) -> None:
-        logger.debug("Initializing Chat with tools: {}", tools)
-        self.client = get_openai_client()
-        self.messages: list[dict[str, Any]] = []
-        self.tools = {tool.__name__: tool for tool in tools} if tools else {}
-        self.settings = get_settings()
+        self._client = get_openai_client()
+        self._messages: list[dict[str, Any]] = []
+        self._tools = {tool.__name__: tool for tool in tools} if tools else {}
+        self._settings = get_settings()
 
     def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
-        logger.debug("Creating chat completion")
-
         kwargs = {
-            "messages": self.messages,
-            "model": self.settings.openai_model,
-            "temperature": self.settings.openai_temperature,
+            "messages": self._messages,
+            "model": self._settings.openai_model,
+            "temperature": self._settings.openai_temperature,
         }
-        if self.tools:
-            logger.info("tools: {}", self.tools)
-            kwargs["tools"] = [generate_function_schema(tool) for tool in self.tools.values()]
+        if self._tools:
+            logger.info("tools: {}", self._tools)
+            kwargs["tools"] = [generate_function_schema(tool) for tool in self._tools.values()]
 
         if response_format:
             logger.info("response_format: {}", response_format)
             kwargs["response_format"] = response_format
 
-        if self.settings.openai_max_tokens:
-            kwargs["max_tokens"] = self.settings.openai_max_tokens
+        if self._settings.openai_max_tokens:
+            kwargs["max_tokens"] = self._settings.openai_max_tokens
 
         response: ChatCompletion | ParsedChatCompletion
         if response_format:
-            response = self.client.beta.chat.completions.parse(**kwargs)  # type: ignore
+            response = self._client.beta.chat.completions.parse(**kwargs)  # type: ignore
         else:
-            response = self.client.chat.completions.create(**kwargs)  # type: ignore
-
-        logger.debug("Chat completion created: {}", response)
+            response = self._client.chat.completions.create(**kwargs)  # type: ignore
 
         if not response.choices:
             return response
 
-        self.messages += [response.choices[0].message.model_dump()]
+        self._messages += [response.choices[0].message.model_dump()]
         return response
 
     def _handle_response(
@@ -86,7 +81,7 @@ class Agent:
             return
 
         for tool_call in choice.message.tool_calls:
-            tool = self.tools.get(tool_call.function.name)
+            tool = self._tools.get(tool_call.function.name)
             if not tool:
                 logger.warning("Tool not found: {}", tool_call.function.name)
                 continue
@@ -97,24 +92,21 @@ class Agent:
     def add_message(
         self, content: str, role: Literal["system", "user", "tool"] = "user", tool_call_id: str | None = None
     ) -> None:
-        logger.debug("Adding message with content: {} and role: {}", content, role)
         match role:
             case "user" | "system":
-                self.messages += [{"content": content, "role": role}]
+                self._messages += [{"content": content, "role": role}]
             case "tool":
-                self.messages += [{"content": content, "role": role, "tool_call_id": tool_call_id}]
+                self._messages += [{"content": content, "role": role, "tool_call_id": tool_call_id}]
             case _:
                 raise ValueError(f"Invalid role: {role}")
 
     def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
-        logger.debug("Creating final response")
         response = self._handle_response(self._create(response_format), response_format)
         if not response.choices:
             raise ValueError("No completion choices returned")
 
         response_message = response.choices[0].message
         if response_format:
-            logger.info("response_format: {}", response_format)
             if not response_message.parsed:
                 raise ValueError("No completion parsed content returned")
             return response_message.parsed
