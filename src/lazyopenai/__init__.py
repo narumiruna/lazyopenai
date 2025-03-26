@@ -4,7 +4,7 @@ from typing import Final
 
 from loguru import logger
 
-from .lazy import create_chat
+from .lazy import create_agent
 from .lazy import generate
 from .schema import generate_function_schema
 

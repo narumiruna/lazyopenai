@@ -23,5 +23,5 @@ def generate(
     return client.create(response_format=response_format)
 
 
-def create_chat(tools: list[Callable] | None = None) -> Agent:
+def create_agent(tools: list[Callable] | None = None) -> Agent:
     return Agent(tools=tools)
