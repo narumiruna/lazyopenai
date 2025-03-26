@@ -6,13 +6,13 @@ from .chat import ResponseFormatT
 
 def generate(
     messages: str | list[str],
-    system: str | None = None,
+    instruction: str | None = None,
     response_format: type[ResponseFormatT] | None = None,
     tools: list[Callable] | None = None,
 ) -> ResponseFormatT | str:
     client = Chat(tools=tools)
-    if system:
-        client.add_system_message(system)
+    if instruction:
+        client.add_system_message(instruction)
 
     if isinstance(messages, str):
         messages = [messages]
