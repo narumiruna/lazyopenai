@@ -5,12 +5,12 @@ from collections.abc import Callable
 from typing import Any
 from typing import Literal
 from typing import TypeVar
+from typing import cast
 
 from loguru import logger
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
-from openai.types.chat.parsed_chat_completion import ParsedChoice
 from pydantic import BaseModel
 
 from .client import get_openai_client
@@ -30,27 +30,29 @@ class Agent:
         self._tools = {tool.__name__: tool for tool in tools}
         self._tool_schemas = [generate_function_schema(tool) for tool in tools]
 
-    def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
-        kwargs = {
-            "messages": self._messages,
-            "model": self._settings.openai_model,
-            "temperature": self._settings.openai_temperature,
-        }
-        if self._tool_schemas:
-            kwargs["tools"] = self._tool_schemas
+    def _parse(self, response_format: type[ResponseFormatT]) -> ParsedChatCompletion:
+        response = self._client.beta.chat.completions.parse(
+            messages=self._messages,
+            model=self._settings.openai_model,
+            temperature=self._settings.openai_temperature,
+            tools=self._tool_schemas,
+            max_tokens=self._settings.openai_max_tokens,
+            response_format=response_format,
+        )  # type: ignore
+        if not response.choices:
+            return response
 
-        if response_format:
-            logger.info("response_format: {}", response_format)
-            kwargs["response_format"] = response_format
+        self._messages += [response.choices[0].message.model_dump()]
+        return response
 
-        if self._settings.openai_max_tokens:
-            kwargs["max_tokens"] = self._settings.openai_max_tokens
-
-        response: ChatCompletion | ParsedChatCompletion
-        if response_format:
-            response = self._client.beta.chat.completions.parse(**kwargs)  # type: ignore
-        else:
-            response = self._client.chat.completions.create(**kwargs)  # type: ignore
+    def _create(self) -> ChatCompletion:
+        response = self._client.chat.completions.create(
+            messages=self._messages,
+            model=self._settings.openai_model,
+            temperature=self._settings.openai_temperature,
+            tools=self._tool_schemas,
+            max_tokens=self._settings.openai_max_tokens,
+        )  # type: ignore
 
         if not response.choices:
             return response
@@ -60,9 +62,9 @@ class Agent:
 
     def _handle_response(
         self,
-        response: ChatCompletion | ParsedChatCompletion,
+        response: ChatCompletion,
         response_format: type[ResponseFormatT] | None = None,
-    ):
+    ) -> ChatCompletion | ParsedChatCompletion:
         if not response.choices:
             return response
 
@@ -70,15 +72,16 @@ class Agent:
         match choice.finish_reason:
             case "tool_calls":
                 self._handle_tool_choice(choice)
-                response = self._create(response_format=response_format)
-                return response
+                if response_format:
+                    return self._parse(response_format)
+                return self._create()
             case "stop":
                 return response
             case _:
                 logger.warning("Unhandled finish reason: {}", choice.finish_reason)
                 return response
 
-    def _handle_tool_choice(self, choice: Choice | ParsedChoice) -> None:
+    def _handle_tool_choice(self, choice: Choice) -> None:
         if not choice.message.tool_calls:
             return
 
@@ -102,17 +105,18 @@ class Agent:
             case _:
                 raise ValueError(f"Invalid role: {role}")
 
-    def create(self, response_format: type[ResponseFormatT] | None = None) -> ResponseFormatT | str:
-        response = self._handle_response(self._create(response_format), response_format)
+    def send(self) -> str | None:
+        response = self._create()
+        response = self._handle_response(response)
         if not response.choices:
-            raise ValueError("No completion choices returned")
+            return None
+        return response.choices[0].message.content
 
-        response_message = response.choices[0].message
-        if response_format:
-            if not response_message.parsed:
-                raise ValueError("No completion parsed content returned")
-            return response_message.parsed
+    def parse(self, response_format: type[ResponseFormatT]) -> ResponseFormatT | None:
+        response = self._parse(response_format)
+        response = cast(ParsedChatCompletion, self._handle_response(response, response_format))
 
-        if not response_message.content:
-            raise ValueError("No completion content returned")
-        return response_message.content
+        if not response.choices:
+            return None
+
+        return response.choices[0].message.parsed
