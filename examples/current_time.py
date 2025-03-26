@@ -1,29 +1,29 @@
 from datetime import datetime
 
+from pydantic import BaseModel
+
 from lazyopenai import generate
-from lazyopenai.types import BaseTool
 
 
-class GetCurrentTime(BaseTool):
-    def __call__(self) -> str:
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def get_current_time():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-class CurrentTime(BaseTool):
+class CurrentTime(BaseModel):
     current_time: str
 
 
 def main() -> None:
     resp = generate(
         "What is the current time?",
-        tools=[GetCurrentTime],
+        tools=[get_current_time],
     )
     print(resp)
 
     resp_obj = generate(
         "What is the current time?",
         response_format=CurrentTime,
-        tools=[GetCurrentTime],
+        tools=[get_current_time],
     )
     print(resp_obj)
 

@@ -5,6 +5,18 @@ from typing import get_args
 from typing import get_origin
 from typing import get_type_hints
 
+# Mapping from Python types to JSON schema types
+PYTHON_TO_JSON_TYPES = {
+    str: "string",
+    int: "number",
+    float: "number",
+    bool: "boolean",
+    dict: "object",
+    list: "array",
+    None: "null",
+    # Add more mappings as needed
+}
+
 
 def generate_function_schema(func) -> dict[str, Any]:
     """
@@ -40,13 +52,23 @@ def generate_function_schema(func) -> dict[str, Any]:
                 args = get_args(type_hint)
                 if args:
                     # First argument is the actual type
-                    param_type = args[0].__name__
+                    base_type = args[0]
+                    param_type = PYTHON_TO_JSON_TYPES.get(base_type, "object")
+                    # Handle special cases like list[int], dict[str, int], etc.
+                    origin = get_origin(base_type)
+                    if origin is not None:
+                        param_type = PYTHON_TO_JSON_TYPES.get(origin, "object")
                     # Second argument is typically the description
                     if len(args) > 1 and isinstance(args[1], str):
                         param_desc = args[1]
             else:
                 # Handle non-Annotated types
-                param_type = type_hint.__name__
+                base_type = type_hint
+                param_type = PYTHON_TO_JSON_TYPES.get(base_type, "object")
+                # Handle special cases like list[int], dict[str, int], etc.
+                origin = get_origin(base_type)
+                if origin is not None:
+                    param_type = PYTHON_TO_JSON_TYPES.get(origin, "object")
 
         properties[param_name] = {"type": param_type, "description": param_desc}
 

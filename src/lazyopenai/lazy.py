@@ -1,13 +1,14 @@
+from collections.abc import Callable
+
 from .chat import Chat
 from .chat import ResponseFormatT
-from .types import BaseTool
 
 
 def generate(
     messages: str | list[str],
     system: str | None = None,
     response_format: type[ResponseFormatT] | None = None,
-    tools: list[type[BaseTool]] | None = None,
+    tools: list[Callable] | None = None,
 ) -> ResponseFormatT | str:
     client = Chat(tools=tools)
     if system:
@@ -22,5 +23,5 @@ def generate(
     return client.create(response_format=response_format)
 
 
-def create_chat(tools: list[type[BaseTool]] | None = None) -> Chat:
+def create_chat(tools: list[Callable] | None = None) -> Chat:
     return Chat(tools=tools)
