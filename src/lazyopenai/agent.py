@@ -24,8 +24,11 @@ class Agent:
     def __init__(self, tools: list[Callable] | None = None) -> None:
         self._client = get_openai_client()
         self._messages: list[dict[str, Any]] = []
-        self._tools = {tool.__name__: tool for tool in tools} if tools else {}
         self._settings = get_settings()
+
+        tools = tools or []
+        self._tools = {tool.__name__: tool for tool in tools}
+        self._tool_schemas = [generate_function_schema(tool) for tool in tools]
 
     def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
         kwargs = {
@@ -33,9 +36,8 @@ class Agent:
             "model": self._settings.openai_model,
             "temperature": self._settings.openai_temperature,
         }
-        if self._tools:
-            logger.info("tools: {}", self._tools)
-            kwargs["tools"] = [generate_function_schema(tool) for tool in self._tools.values()]
+        if self._tool_schemas:
+            kwargs["tools"] = self._tool_schemas
 
         if response_format:
             logger.info("response_format: {}", response_format)
