@@ -45,24 +45,19 @@ print(resp)
 ### Function Calling
 
 ```python
-from pydantic import Field
-
+from typing import Annotated
 from lazyopenai import generate
-from lazyopenai.types import BaseTool
 
-
-class AddNumbers(BaseTool):
-    a: float = Field(..., description="First number to add")
-    b: float = Field(..., description="Second number to add")
-
-    def __call__(self) -> float:
-        print("function called")
-        return self.a + self.b
-
+def add_numbers(
+    a: Annotated[float, "First number"],
+    b: Annotated[float, "Second number"],
+) -> float:
+    """Add two numbers"""
+    return a + b
 
 resp = generate(
     "100 + 10 = ?",
-    tools=[AddNumbers],
+    tools=[add_numbers],
 )
 print(resp)
 ```
