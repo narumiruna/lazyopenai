@@ -23,5 +23,22 @@ def generate(
     return client.create(response_format=response_format)
 
 
+def send(
+    messages: str | list[str],
+    instruction: str | None = None,
+    tools: list[Callable] | None = None,
+) -> str:
+    return generate(messages, instruction, tools)
+
+
+def parse(
+    messages: str | list[str],
+    response_format: type[ResponseFormatT],
+    instruction: str | None = None,
+    tools: list[Callable] | None = None,
+) -> str:
+    return generate(messages, instruction, response_format, tools)
+
+
 def create_agent(tools: list[Callable] | None = None) -> Agent:
     return Agent(tools=tools)
