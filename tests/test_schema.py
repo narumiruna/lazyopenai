@@ -2,7 +2,7 @@ from typing import Annotated
 
 import pytest
 
-from lazyopenai.function_schema import generate_function_schema
+from lazyopenai.schema import generate_function_schema
 
 
 def add_numbers(

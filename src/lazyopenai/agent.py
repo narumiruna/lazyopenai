@@ -14,7 +14,7 @@ from openai.types.chat.parsed_chat_completion import ParsedChoice
 from pydantic import BaseModel
 
 from .client import get_openai_client
-from .function_schema import generate_function_schema
+from .schema import generate_function_schema
 from .settings import get_settings
 
 ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
