@@ -12,13 +12,13 @@ def generate(
 ) -> ResponseFormatT | str:
     client = Agent(tools=tools)
     if instruction:
-        client.add_system_message(instruction)
+        client.add_message(instruction, "system")
 
     if isinstance(messages, str):
         messages = [messages]
 
     for message in messages:
-        client.add_user_message(message)
+        client.add_message(message, "user")
 
     return client.create(response_format=response_format)
 
