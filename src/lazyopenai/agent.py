@@ -31,26 +31,23 @@ class Agent:
         self._tool_schemas = [generate_function_schema(tool) for tool in tools]
 
     def _create(self, response_format: type[ResponseFormatT] | None = None) -> ChatCompletion | ParsedChatCompletion:
-        kwargs = {
-            "messages": self._messages,
-            "model": self._settings.openai_model,
-            "temperature": self._settings.openai_temperature,
-        }
-        if self._tool_schemas:
-            kwargs["tools"] = self._tool_schemas
-
         if response_format:
-            logger.info("response_format: {}", response_format)
-            kwargs["response_format"] = response_format
-
-        if self._settings.openai_max_tokens:
-            kwargs["max_tokens"] = self._settings.openai_max_tokens
-
-        response: ChatCompletion | ParsedChatCompletion
-        if response_format:
-            response = self._client.beta.chat.completions.parse(**kwargs)  # type: ignore
+            response = self._client.beta.chat.completions.parse(
+                messages=self._messages,
+                model=self._settings.openai_model,
+                response_format=response_format,
+                temperature=self._settings.openai_temperature,
+                tools=self._tool_schemas,
+                max_tokens=self._settings.openai_max_tokens,
+            )
         else:
-            response = self._client.chat.completions.create(**kwargs)  # type: ignore
+            response = self._client.chat.completions.create(
+                messages=self._messages,
+                model=self._settings.openai_model,
+                temperature=self._settings.openai_temperature,
+                tools=self._tool_schemas,
+                max_tokens=self._settings.openai_max_tokens,
+            )
 
         if not response.choices:
             return response
