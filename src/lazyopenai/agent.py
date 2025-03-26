@@ -1,18 +1,12 @@
 from __future__ import annotations
 
+import json
+from collections.abc import Callable
+from typing import Any
 from typing import Literal
 from typing import TypeVar
 
 from loguru import logger
-
-try:
-    from langfuse.openai import openai  # type: ignore # noqa
-except ImportError:
-    logger.warning("Using local OpenAI API client")
-import json
-from collections.abc import Callable
-from typing import Any
-
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
 from pydantic import BaseModel
