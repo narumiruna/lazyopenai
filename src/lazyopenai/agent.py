@@ -25,7 +25,7 @@ from .types import Message
 ResponseFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
 
 
-class Chat:
+class Agent:
     def __init__(self, tools: list[Callable] | None = None) -> None:
         logger.debug("Initializing Chat with tools: {}", tools)
         self.client = get_openai_client()

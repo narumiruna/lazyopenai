@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
-from .chat import Chat
-from .chat import ResponseFormatT
+from .agent import Agent
+from .agent import ResponseFormatT
 
 
 def generate(
@@ -10,7 +10,7 @@ def generate(
     response_format: type[ResponseFormatT] | None = None,
     tools: list[Callable] | None = None,
 ) -> ResponseFormatT | str:
-    client = Chat(tools=tools)
+    client = Agent(tools=tools)
     if instruction:
         client.add_system_message(instruction)
 
@@ -23,5 +23,5 @@ def generate(
     return client.create(response_format=response_format)
 
 
-def create_chat(tools: list[Callable] | None = None) -> Chat:
-    return Chat(tools=tools)
+def create_chat(tools: list[Callable] | None = None) -> Agent:
+    return Agent(tools=tools)
