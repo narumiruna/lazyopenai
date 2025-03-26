@@ -10,6 +10,7 @@ from loguru import logger
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.parsed_chat_completion import ParsedChatCompletion
+from openai.types.chat.parsed_chat_completion import ParsedChatCompletionMessage
 from openai.types.chat.parsed_chat_completion import ParsedChoice
 from pydantic import BaseModel
 
@@ -111,7 +112,7 @@ class Agent:
             raise ValueError("No completion choices returned")
 
         response_message = response.choices[0].message
-        if response_format:
+        if isinstance(response_message, ParsedChatCompletionMessage):
             if not response_message.parsed:
                 raise ValueError("No completion parsed content returned")
             return response_message.parsed
