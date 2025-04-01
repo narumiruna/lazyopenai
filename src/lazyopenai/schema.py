@@ -18,16 +18,14 @@ PYTHON_TO_JSON_TYPES = {
 }
 
 
-def generate_function_schema(func) -> dict[str, Any]:
+def generate_function_schema(func) -> dict[str, Any]:  # noqa: C901
     """
     Generate a function schema from a function's type annotations and docstring.
-
     Uses Annotated type hints to extract parameter descriptions.
     """
     # Extract basic function metadata
     signature = inspect.signature(func)
     type_hints = get_type_hints(func, include_extras=True)
-
     # Get function description from docstring
     doc = inspect.getdoc(func) or ""
     description = doc.split("\n")[0] if doc else func.__name__
@@ -35,7 +33,6 @@ def generate_function_schema(func) -> dict[str, Any]:
     # Process parameters
     properties = {}
     required = []
-
     for param_name, param in signature.parameters.items():
         # Check if parameter is required (no default value)
         if param.default is inspect.Parameter.empty:
@@ -47,7 +44,6 @@ def generate_function_schema(func) -> dict[str, Any]:
 
         if param_name in type_hints:
             type_hint = type_hints[param_name]
-
             if get_origin(type_hint) is Annotated:
                 args = get_args(type_hint)
                 if args:
@@ -58,9 +54,16 @@ def generate_function_schema(func) -> dict[str, Any]:
                     origin = get_origin(base_type)
                     if origin is not None:
                         param_type = PYTHON_TO_JSON_TYPES.get(origin, "object")
-                    # Second argument is typically the description
-                    if len(args) > 1 and isinstance(args[1], str):
-                        param_desc = args[1]
+
+                    # Second argument can be a description string or a Field object
+                    if len(args) > 1:
+                        if isinstance(args[1], str):
+                            param_desc = args[1]
+                        else:
+                            # Try to extract description from a Field object
+                            field_obj = args[1]
+                            if hasattr(field_obj, "description") and field_obj.description is not None:
+                                param_desc = field_obj.description
             else:
                 # Handle non-Annotated types
                 base_type = type_hint

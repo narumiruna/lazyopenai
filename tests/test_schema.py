@@ -1,21 +1,22 @@
 from typing import Annotated
 
 import pytest
+from pydantic import Field
 
 from lazyopenai.schema import generate_function_schema
 
 
 def add_numbers(
-    a: Annotated[float, "First number"],
-    b: Annotated[float, "Second number"],
+    a: Annotated[float, Field(description="First number")],
+    b: Annotated[float, Field(description="Second number")],
 ) -> float:
     """Add two numbers"""
     return a + b
 
 
 def concat_strings(
-    a: Annotated[str, "First string"],
-    b: Annotated[str, "Second string"],
+    a: Annotated[str, Field(description="First string")],
+    b: Annotated[str, Field(description="Second string")],
 ) -> str:
     """Concatenate two strings"""
     return a + b
