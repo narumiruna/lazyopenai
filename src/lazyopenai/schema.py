@@ -78,15 +78,13 @@ def generate_function_schema(func) -> dict[str, Any]:  # noqa: C901
     # Create the complete schema
     return {
         "type": "function",
-        "function": {
-            "name": func.__name__,
-            "description": description,
-            "parameters": {
-                "type": "object",
-                "properties": properties,
-                "required": required,
-                "additionalProperties": False,
-            },
-            "strict": True,
+        "name": func.__name__,
+        "description": description,
+        "parameters": {
+            "type": "object",
+            "properties": properties,
+            "required": required,
+            "additionalProperties": False,
         },
+        "strict": True,
     }
