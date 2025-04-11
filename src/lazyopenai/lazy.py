@@ -2,15 +2,15 @@ from collections.abc import Callable
 from typing import cast
 
 from .agent import Agent
-from .agent import ResponseFormatT
+from .agent import TextFormatT
 
 
 def generate(
     messages: str | list[str],
     instruction: str | None = None,
-    response_format: type[ResponseFormatT] | None = None,
+    response_format: type[TextFormatT] | None = None,
     tools: list[Callable] | None = None,
-) -> ResponseFormatT | str:
+) -> TextFormatT | str:
     client = Agent(tools=tools)
     if instruction:
         client.add_message(instruction, "system")
@@ -21,7 +21,7 @@ def generate(
     for message in messages:
         client.add_message(message, "user")
 
-    return client.create(response_format=response_format)
+    return client.create(text_format=response_format)
 
 
 def send(
@@ -38,17 +38,17 @@ def send(
 
 def parse(
     messages: str | list[str],
-    response_format: type[ResponseFormatT],
+    response_format: type[TextFormatT],
     instruction: str | None = None,
     tools: list[Callable] | None = None,
-) -> ResponseFormatT:
+) -> TextFormatT:
     response = generate(
         messages=messages,
         instruction=instruction,
         response_format=response_format,
         tools=tools,
     )
-    return cast(ResponseFormatT, response)
+    return cast(TextFormatT, response)
 
 
 def create_agent(tools: list[Callable] | None = None) -> Agent:
