@@ -11,13 +11,14 @@ from openai.types.responses import ParsedResponseFunctionToolCall
 from openai.types.responses import Response
 from openai.types.responses import ResponseFunctionToolCall
 from openai.types.responses import ResponseInputParam
+from openai.types.responses.response_input_param import FunctionCallOutput
 from pydantic import BaseModel
 
 from .client import get_openai_client
 from .schema import generate_function_schema
 from .settings import get_settings
 
-TextFormatT = TypeVar("ResponseFormatT", bound=BaseModel)
+TextFormatT = TypeVar("TextFormatT", bound=BaseModel)
 
 
 class Agent:
@@ -73,13 +74,13 @@ class Agent:
                 continue
 
             result = str(tool(**json.loads(tool_call.arguments)))
-            function_call_outputs += [
-                {
-                    "type": "function_call_output",
-                    "call_id": tool_call.call_id,
-                    "output": str(result),
-                }
-            ]
+            function_call_outputs.append(
+                FunctionCallOutput(
+                    type="function_call_output",
+                    call_id=tool_call.call_id,
+                    output=result,
+                )
+            )
         if function_call_outputs:
             self._messages += function_call_outputs
         response = self._create(text_format)
