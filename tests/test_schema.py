@@ -29,40 +29,36 @@ def concat_strings(
             add_numbers,
             {
                 "type": "function",
-                "function": {
-                    "name": "add_numbers",
-                    "description": "Add two numbers",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "a": {"type": "number", "description": "First number"},
-                            "b": {"type": "number", "description": "Second number"},
-                        },
-                        "required": ["a", "b"],
-                        "additionalProperties": False,
+                "name": "add_numbers",
+                "description": "Add two numbers",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "a": {"type": "number", "description": "First number"},
+                        "b": {"type": "number", "description": "Second number"},
                     },
-                    "strict": True,
+                    "required": ["a", "b"],
+                    "additionalProperties": False,
                 },
+                "strict": True,
             },
         ),
         (
             concat_strings,
             {
                 "type": "function",
-                "function": {
-                    "name": "concat_strings",
-                    "description": "Concatenate two strings",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "a": {"type": "string", "description": "First string"},
-                            "b": {"type": "string", "description": "Second string"},
-                        },
-                        "required": ["a", "b"],
-                        "additionalProperties": False,
+                "name": "concat_strings",
+                "description": "Concatenate two strings",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "a": {"type": "string", "description": "First string"},
+                        "b": {"type": "string", "description": "Second string"},
                     },
-                    "strict": True,
+                    "required": ["a", "b"],
+                    "additionalProperties": False,
                 },
+                "strict": True,
             },
         ),
     ],
